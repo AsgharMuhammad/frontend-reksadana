@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, Arial, sans-serif; background: #0b0b0b; color: #eee; }
+.container { max-width: 980px; margin: 40px auto; padding: 20px; background: #141414; border-radius: 16px; }
+h1, h2 { margin: 8px 0 16px; }
+.upload { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+button { padding: 8px 14px; border-radius: 10px; border: 0; cursor: pointer; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+.message { margin: 8px 0 16px; color: #ffd479; }
+table { width: 100%; border-collapse: collapse; background: #0f0f0f; }
+table th, table td { border: 1px solid #333; padding: 8px 10px; text-align: left; }
+.metrics, .predictions { margin-top: 18px; }
