@@ -2,24 +2,28 @@ import React, { useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
+import "./App.css";
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [metrics, setMetrics] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    const f = e.target.files[0];
+    if (f) setSelectedFile(f);
   };
 
   const handleUpload = async () => {
     if (!selectedFile) return alert("Pilih file CSV dulu!");
 
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("file", selectedFile);
 
     try {
-      const resp = await fetch("http://127.0.0.1:8000/upload_predict", {
+      const resp = await fetch("http://127.0.0.1:8000/predict/", {
         method: "POST",
         body: formData,
       });
@@ -27,91 +31,133 @@ function App() {
       const json = await resp.json();
       console.log("RESP JSON:", json);
 
-      // Gabungkan dates, actuals, dan predictions
-      const merged = json.dates.map((d, i) => ({
-        date: d,
-        actual: json.actuals ? json.actuals[i] : null,
-        prediction: json.predictions[i],
+      if (!json.data) {
+        alert("Gagal membaca data hasil prediksi dari server!");
+        return;
+      }
+
+      const merged = json.data.map((d) => ({
+        date: d.Tanggal,
+        actual: d.Actual,
+        prediction: d.Prediction,
       }));
 
       setChartData(merged);
-      setMetrics(json.metrics);
+      setMetrics(json.evaluasi);
     } catch (err) {
       console.error("Upload error:", err);
+      alert("Terjadi kesalahan saat memproses file. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="App" style={{ padding: "20px", background: "#111", color: "white", minHeight: "100vh" }}>
-      <h1>Model Prediksi Harga Reksa Dana Berbasis Data Mining Dengan Algoritma Random Forest</h1>
-      <h1>Muhammad Asghar (F1G121006)</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload & Predict</button>
-
-      {/* Hasil Evaluasi Model */}
-      {metrics && (
-        <div style={{ marginTop: "20px" }}>
-          <h2>Hasil Evaluasi Model</h2>
-          <table border="1" style={{ borderCollapse: "collapse", width: "50%", color: "white" }}>
-            <tbody>
-              <tr><td>MAE</td><td>{metrics.mae}</td></tr>
-              <tr><td>MSE</td><td>{metrics.mse}</td></tr>
-              <tr><td>RMSE</td><td>{metrics.rmse}</td></tr>
-            </tbody>
-          </table>
+    <div className="app-container">
+      <div className="main-container">
+        <div className="header">
+          <h1 className="main-title">
+            Model Prediksi Harga Reksa Dana Berbasis Data Mining Dengan Algoritma Random Forest
+          </h1>
+          <p className="author">Muhammad Asghar (F1G121006)</p>
         </div>
-      )}
 
-      {/* Grafik */}
-      {chartData.length > 0 ? (
-        <div style={{ marginTop: "40px" }}>
-          <h2>Grafik Prediksi vs Aktual</h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={false} /> {/* tanggal disembunyikan kalau panjang */}
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {chartData[0]?.actual !== null && (
-                <Line type="monotone" dataKey="actual" stroke="#8884d8" dot={false} name="Actual" />
-              )}
-              <Line type="monotone" dataKey="prediction" stroke="#82ca9d" dot={false} name="Prediction" />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="upload-section">
+          <h2 className="upload-title">Upload Data CSV</h2>
+          <div className="upload-controls">
+            {/* INPUT FILE TERSAMAR — hanya label kustom yang tampak */}
+            <input
+              type="file"
+              id="file-upload"
+              accept=".csv"
+              onChange={handleFileChange}
+              style={{ display: "none" }} // <-- sembunyikan input asli
+            />
+
+            {/* Label bertindak sebagai tombol pilih file */}
+            <label htmlFor="file-upload" className="file-input-label">
+              {selectedFile ? selectedFile.name : "Pilih file CSV"}
+            </label>
+
+            <button
+              onClick={handleUpload}
+              className={`upload-button ${isLoading ? "loading" : ""}`}
+              disabled={!selectedFile || isLoading}
+            >
+              {isLoading ? "Memproses..." : "Upload & Predict"}
+            </button>
+          </div>
         </div>
-      ) : (
-        <p style={{ marginTop: "20px" }}>Belum ada data prediksi.</p>
-      )}
-      {/* 🔹 Tambahan: Tabel Data Aktual vs Prediksi */}
-{chartData.length > 0 && (
-  <div style={{ marginTop: "40px" }}>
-    <h2>Tabel Data Aktual vs Prediksi</h2>
-    <table border="1" style={{ borderCollapse: "collapse", width: "100%", color: "white" }}>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Tanggal</th>
-          <th>Actual</th>
-          <th>Prediction</th>
-        </tr>
-      </thead>
-      <tbody>
-        {chartData.slice(0, 50).map((row, i) => (
-          <tr key={i}>
-            <td>{i + 1}</td>
-            <td>{row.date}</td>
-            <td>{row.actual !== null ? row.actual.toFixed(3) : "-"}</td>
-            <td>{row.prediction.toFixed(3)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    <p style={{ marginTop: "10px" }}>*Hanya ditampilkan 50 data pertama.</p>
-  </div>
-)}
+
+        {/* Hasil Evaluasi Model */}
+        {metrics && (
+          <div className="metrics-section">
+            <h2 className="section-title metrics">Hasil Evaluasi Model</h2>
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <div className="metric-label">Mean Absolute Error</div>
+                <div className="metric-value">{metrics.MAE ? metrics.MAE.toFixed(4) : "-"}</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-label">Mean Squared Error</div>
+                <div className="metric-value">{metrics.MSE ? metrics.MSE.toFixed(4) : "-"}</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-label">Root Mean Squared Error</div>
+                <div className="metric-value">{metrics.RMSE ? metrics.RMSE.toFixed(4) : "-"}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Grafik */}
+        {chartData.length > 0 && (
+          <div className="chart-section">
+            <h2 className="section-title chart">Grafik Prediksi vs Aktual</h2>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="actual" stroke="#FFD700" strokeWidth={2} name="Actual" dot={false} />
+                  <Line type="monotone" dataKey="prediction" stroke="#FF4500" strokeWidth={2} name="Prediction" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Tabel */}
+        {chartData.length > 0 && (
+          <div className="table-section">
+            <h2 className="section-title table">Tabel Data Aktual vs Prediksi</h2>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Tanggal</th>
+                  <th>Actual</th>
+                  <th>Prediction</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chartData.map((row, i) => (
+                  <tr key={i}>
+                    <td>{i + 1}</td>
+                    <td>{row.date}</td>
+                    <td>{row.actual !== null && row.actual !== undefined ? row.actual.toFixed(3) : "-"}</td>
+                    <td>{row.prediction !== null && row.prediction !== undefined ? row.prediction.toFixed(3) : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
-      
   );
 }
 
