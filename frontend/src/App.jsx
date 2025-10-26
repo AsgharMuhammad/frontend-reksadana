@@ -39,7 +39,7 @@ function App() {
       const merged = json.data.map((d) => ({
         date: d.Tanggal,
         actual: d.Actual,
-        prediction: d.Prediction,
+        predicted: d.Predicted,
       }));
 
       setChartData(merged);
@@ -122,8 +122,8 @@ function App() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="actual" stroke="#FFD700" strokeWidth={2} name="Actual" dot={false} />
-                  <Line type="monotone" dataKey="prediction" stroke="#FF4500" strokeWidth={2} name="Prediction" dot={false} />
+                  <Line type="monotone" dataKey="actual" stroke="#2563eb" strokeWidth={2} name="Actual" dot={false} />
+                  <Line type="monotone" dataKey="predicted" stroke="#dc2626" strokeWidth={2} name="Predicted" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -134,13 +134,15 @@ function App() {
         {chartData.length > 0 && (
           <div className="table-section">
             <h2 className="section-title table">Tabel Data Aktual vs Prediksi</h2>
+            <div className="table-wrapper">
             <table className="data-table">
               <thead>
                 <tr>
                   <th>No</th>
                   <th>Tanggal</th>
                   <th>Actual</th>
-                  <th>Prediction</th>
+                  <th>Predicted</th>
+                  <th>Error</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,12 +150,14 @@ function App() {
                   <tr key={i}>
                     <td>{i + 1}</td>
                     <td>{row.date}</td>
-                    <td>{row.actual !== null && row.actual !== undefined ? row.actual.toFixed(3) : "-"}</td>
-                    <td>{row.prediction !== null && row.prediction !== undefined ? row.prediction.toFixed(3) : "-"}</td>
+                    <td>{row.actual !== null && row.actual !== undefined ? row.actual.toFixed(4) : "-"}</td>
+                    <td>{row.predicted !== null && row.predicted !== undefined ? row.predicted.toFixed(4) : "-"}</td>
+                    <td>{row.actual !== null && row.predicted !== null ? (row.actual - row.predicted).toFixed(4) : "-"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

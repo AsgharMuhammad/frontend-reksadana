@@ -274,10 +274,11 @@ body {
 }
 
 .chart-container {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
   padding: 20px;
   margin-top: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .table-section {
@@ -291,29 +292,60 @@ body {
   animation: fadeInUp 0.8s ease-out 0.8s both;
 }
 
+.table-wrapper {
+  max-height: 600px;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .data-table th {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(102, 126, 234, 0.9);
+  backdrop-filter: blur(10px);
   padding: 16px 12px;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .data-table td {
-  padding: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
-  transition: background-color 0.2s ease;
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+  transition: all 0.2s ease;
+  text-align: center;
+  font-size: 0.95rem;
 }
 
 .data-table tr:hover td {
